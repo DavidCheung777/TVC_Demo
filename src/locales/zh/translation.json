@@ -1,0 +1,376 @@
+{
+  "app": {
+    "title": "TVC 智创"
+  },
+  "nav": {
+    "creation": "开始创作",
+    "myWorks": "我的作品",
+    "login": "登录",
+    "signUp": "注册",
+    "logout": "退出登录",
+    "profile": "个人中心",
+    "admin": "管理后台"
+  },
+  "home": {
+    "hero": {
+      "title": "用 <1>AI 速度</1> 打造 TVC 广告",
+      "subtitle": "几分钟内从脚本到成片。利用豆包大模型为您的品牌生成专业脚本、分镜和视频。",
+      "startCreating": "开始创作",
+      "viewGallery": "查看案例"
+    },
+    "features": {
+      "script": {
+        "title": "AI 脚本生成",
+        "desc": "输入产品详情，让 AI 在几秒钟内生成创意脚本。"
+      },
+      "storyboard": {
+        "title": "自动化分镜",
+        "desc": "利用 AI 生成的分镜画面可视化您的脚本。"
+      },
+      "video": {
+        "title": "视频制作",
+        "desc": "利用 AI 视频生成能力将分镜转化为全动态视频。"
+      }
+    },
+    "cta": {
+      "title": "准备好彻底改变广告制作了吗？",
+      "desc": "加入成千上万的创作者和品牌，使用我们的平台以极低的成本制作高质量的 TVC 广告。",
+      "button": "免费开始"
+    }
+  },
+  "dashboard": {
+    "title": "我的项目",
+    "newProject": "新建项目",
+    "noProjects": {
+      "title": "暂无项目",
+      "desc": "创建您的第一个 TVC 广告项目以开始。",
+      "button": "创建项目"
+    },
+    "status": {
+      "draft": "草稿",
+      "scripting": "脚本生成中",
+      "storyboard": "分镜生成中",
+      "video": "视频生成中",
+      "processing": "处理中",
+      "completed": "已完成"
+    },
+    "modal": {
+      "title": "创建新项目",
+      "projectName": "项目名称",
+      "productDesc": "产品描述",
+      "targetAudience": "目标受众",
+      "budgetRange": "预算范围",
+      "cancel": "取消",
+      "create": "创建",
+      "save": "保存",
+      "creating": "创建中...",
+      "placeholders": {
+        "projectName": "例如：2024 夏季营销活动",
+        "productDesc": "描述您的产品、关键特性和独特卖点...",
+        "targetAudience": "例如：年轻职场人士"
+      },
+      "budgetOptions": {
+        "default": "选择范围",
+        "low": "低 (<$1万)",
+        "medium": "中 ($1万-$5万)",
+        "high": "高 (>$5万)"
+      }
+    }
+  },
+  "script": {
+    "step": "第 1 步：生成脚本",
+    "steps": {
+      "script": "脚本",
+      "storyboard": "分镜",
+      "video": "视频"
+    },
+    "details": "项目详情",
+    "productName": "产品名称",
+    "model": "AI 模型",
+    "version": "版本",
+    "features": "关键特性（每行一个）",
+    "productImages": "产品图片",
+    "uploadPrompt": "拖拽图片到此处，或点击选择",
+    "uploadSupport": "支持 JPG, PNG, WEBP (最大 5MB)",
+    "duration": "时长（秒）",
+    "customDuration": "自定义",
+    "customDurationPlaceholder": "输入时长（秒）",
+    "style": "风格",
+    "generate": "生成脚本",
+    "generating": "生成中...",
+    "output": "生成的脚本",
+    "scene": "场景",
+    "visual": "画面",
+    "audio": "旁白/音效",
+    "proceed": "前往分镜生成",
+    "styles": {
+      "modern": "现代活力",
+      "emotional": "情感叙事",
+      "professional": "专业商务",
+      "humorous": "幽默风趣"
+    },
+    "placeholder": {
+      "script": "生成的脚本将显示在这里",
+      "features": "- 高性能\n- 环保\n- 价格实惠"
+    }
+  },
+  "storyboard": {
+    "step": "第 2 步：生成分镜",
+    "scenes": "场景列表",
+    "generateAll": "生成所有画面",
+    "regenerate": "重新生成画面",
+    "waiting": "等待生成...",
+    "generating": "生成中...",
+    "generateScene": "生成当前画面",
+    "regenerateScene": "重新生成",
+    "proceed": "前往视频生成",
+    "selectModel": "选择图像模型",
+    "imageSize": "图像尺寸",
+    "imageStyle": "图像风格",
+    "watermark": "添加水印",
+    "noScript": {
+      "title": "未找到脚本",
+      "desc": "请先生成脚本。",
+      "button": "前往脚本生成"
+    }
+  },
+  "video": {
+    "step": "第 3 步：生成视频",
+    "finalReview": "最终预览",
+    "sceneVideos": "场景视频",
+    "ready": "准备生成视频",
+    "readyDesc": "我们的 AI 将组合您的分镜，通过动画处理，并添加配音和背景音乐，生成完整的 TVC 广告。",
+    "generate": "生成最终视频",
+    "generateAll": "生成所有视频",
+    "regenerateAll": "重新生成所有视频",
+    "generateScene": "生成场景视频",
+    "regenerateScene": "重新生成",
+    "generateFinal": "生成最终视频",
+    "generating": "视频生成中...",
+    "success": "视频生成成功！",
+    "successDesc": "您的广告已准备好下载。",
+    "download": "下载",
+    "pushToLibrary": "推送素材库",
+    "pushSuccess": "已推送至素材库",
+    "viewAll": "查看所有作品",
+    "selectModel": "选择视频模型",
+    "resolution": "分辨率",
+    "aspectRatio": "宽高比",
+    "hasAudio": "是否有声",
+    "demoMode": "样片模式",
+    "mergeTitle": "合并场景视频",
+    "mergeDesc": "将所有场景视频合并为一个完整的视频文件。",
+    "mergeVideos": "合并视频",
+    "merging": "合并中...",
+    "loading": "加载中",
+    "play": "播放",
+    "seed": "种子值",
+    "seedHint": "同一项目使用相同种子，保证视频风格一致",
+    "success": "视频生成成功！",
+    "noStoryboards": {
+      "title": "未找到分镜",
+      "desc": "请先生成分镜。",
+      "button": "前往分镜生成"
+    }
+  },
+  "works": {
+    "title": "我的作品",
+    "noWorks": {
+      "title": "暂无已完成作品",
+      "desc": "开始一个新项目以创建您的第一个广告。",
+      "button": "前往控制台"
+    },
+    "viewDetails": "查看详情"
+  },
+  "auth": {
+    "login": {
+      "title": "登录您的账户",
+      "orCreate": "创建一个新账户",
+      "email": "电子邮箱",
+      "password": "密码",
+      "submit": "登录",
+      "submitting": "登录中..."
+    },
+    "register": {
+      "title": "创建您的账户",
+      "alreadyHaveAccount": "已有账户？",
+      "orLogin": "登录",
+      "name": "全名",
+      "company": "公司（选填）",
+      "email": "电子邮箱",
+      "password": "密码",
+      "submit": "创建账户",
+      "submitting": "创建中..."
+    }
+  },
+  "profile": {
+    "title": "个人中心",
+    "accountDetails": "账户详情",
+    "userId": "用户 ID"
+  },
+  "common": {
+    "actions": "操作",
+    "back": "返回上一步",
+    "error": "发生错误",
+    "close": "关闭",
+    "missingParams": "参数缺失",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
+    "edit": "编辑",
+    "search": "搜索",
+    "view": "查看",
+    "delete": "删除",
+    "success": "操作成功",
+    "cancel": "取消",
+    "confirm": "确认",
+    "add": "添加"
+  },
+  "admin": {
+    "login": {
+      "title": "管理后台登录",
+      "notAdmin": "访问被拒绝。需要管理员权限。"
+    },
+    "nav": {
+      "users": "用户管理",
+      "models": "模型管理",
+      "providers": "供应商管理",
+      "projects": "项目管理",
+      "prompts": "提示词广场",
+      "analytics": "数据分析"
+    },
+    "analytics": {
+      "title": "数据分析",
+      "totalUsers": "总用户数",
+      "activeUsers": "活跃用户数",
+      "totalProjects": "总项目数",
+      "completedVideos": "已完成视频",
+      "userGrowth": "用户增长趋势",
+      "projectStatus": "项目状态分布"
+    },
+    "users": {
+      "title": "用户管理",
+      "add": "添加用户",
+      "edit": "编辑用户",
+      "searchPlaceholder": "搜索用户...",
+      "name": "姓名",
+      "email": "邮箱",
+      "password": "密码",
+      "role": "角色",
+      "roleAdmin": "管理员",
+      "roleUser": "普通用户",
+      "joined": "加入时间",
+      "actions": "操作",
+      "confirmDelete": "确定要删除该用户吗？",
+      "deleteTitle": "删除用户",
+      "deleteConfirmMessage": "您即将删除用户 \"{{name}}\"。此操作不可撤销。",
+      "enterEmailConfirm": "请输入用户邮箱以确认删除：",
+      "confirmEmailMismatch": "输入的邮箱不匹配，请重新输入",
+      "confirmDeleteBtn": "确认删除",
+      "noUsersFound": "未找到用户"
+    },
+    "models": {
+      "title": "模型管理",
+      "add": "添加模型",
+      "edit": "编辑模型",
+      "name": "模型 ID",
+      "modelIds": "模型 ID (多个以分号分隔)",
+      "endpoint": "API 访问 Endpoint",
+      "provider": "提供商",
+      "type": "类型",
+      "status": "状态",
+      "actions": "操作",
+      "confirmDelete": "确定要删除该模型吗？",
+      "apiKey": "API Key",
+      "selectProvider": "选择提供商",
+      "customProvider": "自定义提供商",
+      "enterProviderCode": "输入提供商代码",
+      "typeText": "文本",
+      "typeImage": "图像",
+      "typeVideo": "视频",
+      "deleteTitle": "删除模型",
+      "deleteConfirmMessage": "您即将删除模型 \"{{name}}\"。此操作不可撤销。",
+      "enterNameConfirm": "请输入模型名称以确认删除：",
+      "confirmNameMismatch": "输入的名称不匹配，请重新输入",
+      "confirmDeleteBtn": "确认删除"
+    },
+    "providers": {
+      "title": "供应商管理",
+      "add": "添加供应商",
+      "edit": "编辑供应商",
+      "name": "供应商名称",
+      "code": "供应商代码",
+      "endpoint": "API Endpoint",
+      "status": "状态",
+      "confirmDelete": "确定要删除该供应商吗？",
+      "deleteTitle": "删除供应商",
+      "deleteConfirmMessage": "您即将删除供应商 \"{{name}}\" (代码: {{code}})。此操作不可撤销。",
+      "enterCodeConfirm": "请输入供应商代码以确认删除：",
+      "confirmCodeMismatch": "输入的代码不匹配，请重新输入",
+      "confirmDeleteBtn": "确认删除",
+      "refresh": "刷新",
+      "refreshing": "刷新中..."
+    },
+    "projects": {
+      "title": "项目管理",
+      "total": "总计",
+      "searchPlaceholder": "搜索项目...",
+      "allStatus": "全部状态",
+      "noProjects": "暂无项目",
+      "confirmDelete": "确定要删除该项目及其所有相关数据吗？",
+      "deleteTitle": "删除项目",
+      "deleteConfirmMessage": "您即将删除项目 \"{{name}}\" 及其所有相关数据（脚本、分镜、视频、素材）。此操作不可撤销。",
+      "enterNameConfirm": "请输入项目名称以确认删除：",
+      "nameMismatch": "输入的项目名称不匹配，请重新输入",
+      "confirmDeleteBtn": "确认删除",
+      "status": {
+        "draft": "草稿",
+        "scripting": "脚本生成中",
+        "storyboard": "分镜生成中",
+        "video": "视频生成中",
+        "completed": "已完成"
+      },
+      "table": {
+        "name": "项目名称",
+        "status": "状态",
+        "user": "用户",
+        "createdAt": "创建时间",
+        "actions": "操作"
+      },
+      "detail": {
+        "status": "状态",
+        "createdAt": "创建时间",
+        "productInfo": "产品信息",
+        "targetAudience": "目标受众",
+        "budget": "预算范围",
+        "scripts": "脚本",
+        "storyboards": "分镜",
+        "videos": "视频",
+        "library": "素材库",
+        "scriptVersions": "脚本版本历史",
+        "storyboardList": "分镜列表",
+        "videoList": "视频列表"
+      }
+    },
+    "prompts": {
+      "title": "提示词广场",
+      "add": "添加提示词",
+      "edit": "编辑提示词",
+      "searchPlaceholder": "搜索提示词...",
+      "allCategories": "全部分类",
+      "noPrompts": "暂无提示词",
+      "title_label": "标题",
+      "content": "提示词内容",
+      "category": "分类",
+      "tags": "标签",
+      "tagsPlaceholder": "多个标签用逗号分隔",
+      "isPublic": "公开可见",
+      "copy": "复制",
+      "deleteTitle": "删除提示词",
+      "deleteConfirmMessage": "您即将删除提示词 \"{{name}}\"。此操作不可撤销。",
+      "enterTitleConfirm": "请输入提示词标题以确认删除：",
+      "confirmTitleMismatch": "输入的标题不匹配，请重新输入",
+      "confirmDeleteBtn": "确认删除"
+    }
+  }
+}

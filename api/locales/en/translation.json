@@ -1,0 +1,24 @@
+{
+  "auth": {
+    "loginFailed": "Login failed",
+    "registerFailed": "Registration failed",
+    "userNotFound": "User not found",
+    "invalidPassword": "Invalid password",
+    "emailExists": "Email already exists",
+    "unauthorized": "Unauthorized"
+  },
+  "project": {
+    "notFound": "Project not found",
+    "createFailed": "Failed to create project",
+    "updateFailed": "Failed to update project",
+    "deleteFailed": "Failed to delete project"
+  },
+  "ai": {
+    "generationFailed": "AI generation failed"
+  },
+  "common": {
+    "success": "Success",
+    "error": "Internal server error",
+    "missingParams": "Missing required parameters"
+  }
+}

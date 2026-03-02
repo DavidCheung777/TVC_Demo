@@ -1,0 +1,375 @@
+{
+  "app": {
+    "title": "TVC AI"
+  },
+  "nav": {
+    "creation": "Creation",
+    "myWorks": "My Works",
+    "login": "Login",
+    "signUp": "Sign Up",
+    "logout": "Logout",
+    "profile": "Profile",
+    "admin": "Admin Console"
+  },
+  "home": {
+    "hero": {
+      "title": "Create TVC Ads with <1>AI Speed</1>",
+      "subtitle": "From script to video in minutes. Leverage Doubao Large Model to generate professional scripts, storyboards, and videos for your brand.",
+      "startCreating": "Start Creating",
+      "viewGallery": "View Gallery"
+    },
+    "features": {
+      "script": {
+        "title": "AI Script Generation",
+        "desc": "Input your product details and let our AI generate creative scripts in seconds."
+      },
+      "storyboard": {
+        "title": "Automated Storyboards",
+        "desc": "Visualize your script with AI-generated storyboards for every scene."
+      },
+      "video": {
+        "title": "Video Production",
+        "desc": "Turn storyboards into full-motion videos with AI video generation capabilities."
+      }
+    },
+    "cta": {
+      "title": "Ready to revolutionize your ad production?",
+      "desc": "Join thousands of creators and brands using our platform to produce high-quality TVC ads at a fraction of the cost.",
+      "button": "Get Started for Free"
+    }
+  },
+  "dashboard": {
+    "title": "My Projects",
+    "newProject": "New Project",
+    "noProjects": {
+      "title": "No projects yet",
+      "desc": "Create your first TVC ad project to get started.",
+      "button": "Create a project"
+    },
+    "status": {
+      "draft": "Draft",
+      "scripting": "Scripting",
+      "storyboard": "Storyboard",
+      "video": "Video",
+      "processing": "Processing",
+      "completed": "Completed"
+    },
+    "modal": {
+      "title": "Create New Project",
+      "projectName": "Project Name",
+      "productDesc": "Product Description",
+      "targetAudience": "Target Audience",
+      "budgetRange": "Budget Range",
+      "cancel": "Cancel",
+      "create": "Create",
+      "save": "Save",
+      "creating": "Creating...",
+      "placeholders": {
+        "projectName": "e.g. Summer Campaign 2024",
+        "productDesc": "Describe your product, key features, and unique selling points...",
+        "targetAudience": "e.g. Young professionals"
+      },
+      "budgetOptions": {
+        "default": "Select range",
+        "low": "Low (<$10k)",
+        "medium": "Medium ($10k-$50k)",
+        "high": "High (>$50k)"
+      }
+    }
+  },
+  "script": {
+    "step": "Step 1: Generate Script",
+    "steps": {
+      "script": "Script",
+      "storyboard": "Storyboard",
+      "video": "Video"
+    },
+    "details": "Project Details",
+    "productName": "Product Name",
+    "model": "AI Model",
+    "version": "Version",
+    "features": "Key Features (one per line)",
+    "productImages": "Product Images",
+    "uploadPrompt": "Drag and drop images here, or click to select",
+    "uploadSupport": "Supports JPG, PNG, WEBP (Max 5MB)",
+    "duration": "Duration (seconds)",
+    "customDuration": "Custom",
+    "customDurationPlaceholder": "Enter duration (seconds)",
+    "style": "Style",
+    "generate": "Generate Script",
+    "generating": "Generating...",
+    "output": "Generated Script",
+    "scene": "Scene",
+    "visual": "Visual",
+    "audio": "Audio",
+    "proceed": "Proceed to Storyboard",
+    "styles": {
+      "modern": "Modern & Energetic",
+      "emotional": "Emotional & Story-driven",
+      "professional": "Professional & Corporate",
+      "humorous": "Humorous & Fun"
+    },
+    "placeholder": {
+      "script": "Generated script will appear here",
+      "features": "- High performance\n- Eco-friendly\n- Affordable"
+    }
+  },
+  "storyboard": {
+    "step": "Step 2: Generate Storyboards",
+    "scenes": "Scenes",
+    "generateAll": "Generate All Images",
+    "regenerate": "Regenerate Images",
+    "waiting": "Waiting to generate...",
+    "generating": "Generating...",
+    "generateScene": "Generate Scene",
+    "regenerateScene": "Regenerate",
+    "proceed": "Proceed to Video Generation",
+    "selectModel": "Select Image Model",
+    "imageSize": "Image Size",
+    "imageStyle": "Image Style",
+    "watermark": "Add Watermark",
+    "noScript": {
+      "title": "No script found",
+      "desc": "Please generate a script first.",
+      "button": "Go to Script Generation"
+    }
+  },
+  "video": {
+    "step": "Step 3: Generate Video",
+    "finalReview": "Final Review",
+    "sceneVideos": "Scene Videos",
+    "ready": "Ready to produce video",
+    "readyDesc": "Our AI will combine your storyboards, animate them, and add voiceover and music to create a complete TVC advertisement.",
+    "generate": "Generate Final Video",
+    "generateAll": "Generate All Videos",
+    "regenerateAll": "Regenerate All Videos",
+    "generateScene": "Generate Scene Video",
+    "regenerateScene": "Regenerate",
+    "generateFinal": "Generate Final Video",
+    "generating": "Generating Video...",
+    "success": "Video Generated Successfully!",
+    "successDesc": "Your ad is ready to download.",
+    "download": "Download",
+    "pushToLibrary": "Push to Library",
+    "pushSuccess": "Pushed to Library",
+    "viewAll": "View all works",
+    "selectModel": "Select Video Model",
+    "resolution": "Resolution",
+    "aspectRatio": "Aspect Ratio",
+    "hasAudio": "Has Audio",
+    "demoMode": "Demo Mode",
+    "mergeTitle": "Merge Scene Videos",
+    "mergeDesc": "Combine all scene videos into a complete video file.",
+    "mergeVideos": "Merge Videos",
+    "merging": "Merging...",
+    "loading": "Loading",
+    "play": "Play",
+    "seed": "Seed",
+    "seedHint": "Same project uses same seed for consistent video style",
+    "noStoryboards": {
+      "title": "No storyboards found",
+      "desc": "Please generate storyboards first.",
+      "button": "Go to Storyboard Generation"
+    }
+  },
+  "works": {
+    "title": "My Works",
+    "noWorks": {
+      "title": "No completed works yet",
+      "desc": "Start a new project to create your first ad.",
+      "button": "Go to Dashboard"
+    },
+    "viewDetails": "View Details"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in to your account",
+      "orCreate": "create a new account",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Signing in..."
+    },
+    "register": {
+      "title": "Create your account",
+      "alreadyHaveAccount": "Already have an account?",
+      "orLogin": "Sign in",
+      "name": "Full Name",
+      "company": "Company (Optional)",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Create account",
+      "submitting": "Creating account..."
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "accountDetails": "Account Details",
+    "userId": "User ID"
+  },
+  "common": {
+    "actions": "Actions",
+    "back": "Back",
+    "error": "An error occurred",
+    "close": "Close",
+    "missingParams": "Missing parameters",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
+    "edit": "Edit",
+    "search": "Search",
+    "view": "View",
+    "delete": "Delete",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "add": "Add"
+  },
+  "admin": {
+    "login": {
+      "title": "Admin Console Login",
+      "notAdmin": "Access denied. Admin privileges required."
+    },
+    "nav": {
+      "users": "User Management",
+      "models": "Model Management",
+      "providers": "Provider Management",
+      "projects": "Project Management",
+      "prompts": "Prompt Plaza",
+      "analytics": "Data Analysis"
+    },
+    "analytics": {
+      "title": "Data Analysis",
+      "totalUsers": "Total Users",
+      "activeUsers": "Active Users",
+      "totalProjects": "Total Projects",
+      "completedVideos": "Completed Videos",
+      "userGrowth": "User Growth Trend",
+      "projectStatus": "Project Status Distribution"
+    },
+    "users": {
+      "title": "User Management",
+      "add": "Add User",
+      "edit": "Edit User",
+      "searchPlaceholder": "Search users...",
+      "name": "Name",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "roleAdmin": "Admin",
+      "roleUser": "User",
+      "joined": "Joined",
+      "actions": "Actions",
+      "confirmDelete": "Are you sure you want to delete this user?",
+      "deleteTitle": "Delete User",
+      "deleteConfirmMessage": "You are about to delete user \"{{name}}\". This action cannot be undone.",
+      "enterEmailConfirm": "Enter the user email to confirm deletion:",
+      "confirmEmailMismatch": "The entered email does not match. Please try again.",
+      "confirmDeleteBtn": "Confirm Delete",
+      "noUsersFound": "No users found"
+    },
+    "models": {
+      "title": "Model Management",
+      "add": "Add Model",
+      "edit": "Edit Model",
+      "name": "Model ID",
+      "modelIds": "Model IDs (Separated by ;)",
+      "endpoint": "API Endpoint",
+      "provider": "Provider",
+      "type": "Type",
+      "status": "Status",
+      "actions": "Actions",
+      "confirmDelete": "Are you sure you want to delete this model?",
+      "apiKey": "API Key",
+      "selectProvider": "Select a provider",
+      "customProvider": "Custom Provider",
+      "enterProviderCode": "Enter provider code",
+      "typeText": "Text",
+      "typeImage": "Image",
+      "typeVideo": "Video",
+      "deleteTitle": "Delete Model",
+      "deleteConfirmMessage": "You are about to delete model \"{{name}}\". This action cannot be undone.",
+      "enterNameConfirm": "Enter the model name to confirm deletion:",
+      "confirmNameMismatch": "The entered name does not match. Please try again.",
+      "confirmDeleteBtn": "Confirm Delete"
+    },
+    "providers": {
+      "title": "Provider Management",
+      "add": "Add Provider",
+      "edit": "Edit Provider",
+      "name": "Provider Name",
+      "code": "Provider Code",
+      "endpoint": "API Endpoint",
+      "status": "Status",
+      "confirmDelete": "Are you sure you want to delete this provider?",
+      "deleteTitle": "Delete Provider",
+      "deleteConfirmMessage": "You are about to delete provider \"{{name}}\" (code: {{code}}). This action cannot be undone.",
+      "enterCodeConfirm": "Enter the provider code to confirm deletion:",
+      "confirmCodeMismatch": "The entered code does not match. Please try again.",
+      "confirmDeleteBtn": "Confirm Delete",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing..."
+    },
+    "projects": {
+      "title": "Project Management",
+      "total": "Total",
+      "searchPlaceholder": "Search projects...",
+      "allStatus": "All Status",
+      "noProjects": "No projects found",
+      "confirmDelete": "Are you sure you want to delete this project and all related data?",
+      "deleteTitle": "Delete Project",
+      "deleteConfirmMessage": "You are about to delete project \"{{name}}\" and all related data (scripts, storyboards, videos, library items). This action cannot be undone.",
+      "enterNameConfirm": "Enter the project name to confirm deletion:",
+      "nameMismatch": "The entered name does not match. Please try again.",
+      "confirmDeleteBtn": "Confirm Delete",
+      "status": {
+        "draft": "Draft",
+        "scripting": "Scripting",
+        "storyboard": "Storyboard",
+        "video": "Video Generation",
+        "completed": "Completed"
+      },
+      "table": {
+        "name": "Project Name",
+        "status": "Status",
+        "user": "User",
+        "createdAt": "Created At",
+        "actions": "Actions"
+      },
+      "detail": {
+        "status": "Status",
+        "createdAt": "Created At",
+        "productInfo": "Product Info",
+        "targetAudience": "Target Audience",
+        "budget": "Budget Range",
+        "scripts": "Scripts",
+        "storyboards": "Storyboards",
+        "videos": "Videos",
+        "library": "Library",
+        "scriptVersions": "Script Version History",
+        "storyboardList": "Storyboard List",
+        "videoList": "Video List"
+      }
+    },
+    "prompts": {
+      "title": "Prompt Plaza",
+      "add": "Add Prompt",
+      "edit": "Edit Prompt",
+      "searchPlaceholder": "Search prompts...",
+      "allCategories": "All Categories",
+      "noPrompts": "No prompts found",
+      "title_label": "Title",
+      "content": "Prompt Content",
+      "category": "Category",
+      "tags": "Tags",
+      "tagsPlaceholder": "Separate tags with commas",
+      "isPublic": "Public",
+      "copy": "Copy",
+      "deleteTitle": "Delete Prompt",
+      "deleteConfirmMessage": "You are about to delete prompt \"{{name}}\". This action cannot be undone.",
+      "enterTitleConfirm": "Enter the prompt title to confirm deletion:",
+      "confirmTitleMismatch": "The entered title does not match. Please try again.",
+      "confirmDeleteBtn": "Confirm Delete"
+    }
+  }
+}
