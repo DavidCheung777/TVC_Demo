@@ -1,8 +1,12 @@
 import { type Request, type Response } from 'express';
-import { generateScript, generateImage, generateVideo } from '../services/aiService.js';
+import { generateScript, generateImage, generateVideo, generateCreativeAnalysis } from '../services/aiService.js';
 import { mergeVideos } from '../services/videoMergeService.js';
 import { db } from '../services/db.js';
 import { nanoid } from 'nanoid';
+import path from 'path';
+import fs from 'fs/promises';
+import { getDownloadUrl, uploadToTOS } from '../services/tosService.js';
+import { ModelResolutionError, resolveModel } from '../services/modelResolver.js';
 
 interface AuthenticatedRequest extends Request {
   user?: any;
@@ -10,7 +14,7 @@ interface AuthenticatedRequest extends Request {
 
 export const createImageTask = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { prompt, size, style, project_id, sequence_number, model_id, watermark } = req.body;
+    const { prompt, size, style, project_id, sequence_number, model_id, watermark, script_id, reference_image_ids, reference_image_urls } = req.body;
 
     if (!prompt) {
       res.status(400).json({ success: false, error: req.t('common.missingParams') });
@@ -19,19 +23,22 @@ export const createImageTask = async (req: AuthenticatedRequest, res: Response):
 
     const taskId = nanoid();
     
-    // Create task record
     await db.from('tasks').insert({
       id: taskId,
       type: 'image_generation',
       status: 'pending',
-      input: JSON.stringify({ prompt, size, style, project_id, sequence_number, model_id, watermark, script_id: req.body.script_id })
+      input: JSON.stringify({ 
+        prompt, size, style, project_id, sequence_number, model_id, watermark, script_id, 
+        reference_image_ids, reference_image_urls 
+      })
     });
 
-    // Return task ID immediately
     res.status(202).json({ success: true, task_id: taskId });
 
-    // Process in background (no await - fire and forget)
-    processImageTask(taskId, { prompt, size, style, project_id, sequence_number, model_id, watermark, script_id: req.body.script_id });
+    processImageTask(taskId, { 
+      prompt, size, style, project_id, sequence_number, model_id, watermark, script_id,
+      reference_image_ids, reference_image_urls 
+    });
     
   } catch (error) {
     console.error('Create image task error:', error);
@@ -40,53 +47,85 @@ export const createImageTask = async (req: AuthenticatedRequest, res: Response):
 };
 
 const processImageTask = async (taskId: string, params: any) => {
-  const { prompt, size, style, project_id, sequence_number, model_id, watermark, script_id } = params;
+  const { prompt, size, style, project_id, sequence_number, model_id, watermark, script_id, reference_image_ids, reference_image_urls } = params;
   
   try {
-    let modelInfo = null;
-    let modelIdToUse = model_id;
-    
-    if (!model_id) {
-      const { data: defaultModel } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('type', 'image')
-        .eq('is_active', 1)
-        .limit(1);
-      
-      if (defaultModel && defaultModel.length > 0) {
-        modelInfo = defaultModel[0];
-        modelIdToUse = defaultModel[0].Model_ID;
-        console.log(`Using default image model: ${modelInfo.Model_ID}`);
+    const { modelInfo, modelIdToUse } = await resolveModel({
+      inputModelId: model_id,
+      defaultModelType: 'image',
+      allowDefault: true,
+      missingModelBehavior: 'warn-keep',
+      logPrefix: 'processImageTask'
+    });
+
+    let refImageUrls: string[] = [];
+    if (reference_image_urls && reference_image_urls.length > 0) {
+      const resolved: string[] = [];
+      for (const raw of reference_image_urls as any[]) {
+        let url: string | undefined = typeof raw === 'string' ? raw : undefined;
+        if (!url) continue;
+
+        if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+          const localRel = url.startsWith('/') ? url.slice(1) : url;
+          const localPath = path.resolve(process.cwd(), localRel);
+          const buffer = await fs.readFile(localPath);
+          const ext = path.extname(url) || '.png';
+          const objectKey = `reference-images/${nanoid()}${ext}`;
+          await uploadToTOS(objectKey, buffer);
+          url = objectKey;
+        }
+
+        if (url && !url.startsWith('http') && !url.startsWith('data:')) {
+          url = getDownloadUrl(url, 3600);
+        }
+
+        if (url) resolved.push(url);
       }
-    } else {
-      // Try to find by id (PK) first
-      let { data } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('id', model_id)
-        .single();
-      
-      // If not found, try by Model_ID
-      if (!data) {
-        const { data: dataByModelId } = await db
-          .from('models')
-          .select('id, Model_ID, provider, type, endpoint')
-          .eq('Model_ID', model_id)
-          .single();
-        data = dataByModelId;
-      }
-      
-      if (data) {
-        modelInfo = data;
-        // Use the Model_ID for the API call, not the PK
-        modelIdToUse = data.Model_ID; 
-      } else {
-        console.warn(`Model not found for id/Model_ID: ${model_id}`);
+      refImageUrls = resolved;
+    } else if (reference_image_ids && reference_image_ids.length > 0) {
+      const { data: refImages } = await db
+        .from('reference_images')
+        .select('id, image_url, thumbnail_url, name')
+        .in('id', reference_image_ids);
+      if (refImages && refImages.length > 0) {
+        const resolved: string[] = [];
+        for (const img of refImages as any[]) {
+          let url: string | undefined = img?.image_url;
+          if (!url) continue;
+
+          if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
+            const localRel = url.startsWith('/') ? url.slice(1) : url;
+            const localPath = path.resolve(process.cwd(), localRel);
+            const buffer = await fs.readFile(localPath);
+            const ext = path.extname(img?.name || '') || '.png';
+            const objectKey = `reference-images/${img.id}${ext}`;
+            await uploadToTOS(objectKey, buffer);
+            await db
+              .from('reference_images')
+              .update({ image_url: objectKey, thumbnail_url: objectKey })
+              .eq('id', img.id);
+            url = objectKey;
+          }
+
+          if (url && !url.startsWith('http') && !url.startsWith('data:')) {
+            url = getDownloadUrl(url, 3600);
+          }
+
+          if (url) resolved.push(url);
+        }
+        refImageUrls = resolved;
       }
     }
 
-    const imageUrl = await generateImage(prompt, size || '1024x1024', style, modelIdToUse, modelInfo, watermark);
+    const imageUrl = await generateImage(
+      prompt, 
+      size || '1024x1024', 
+      style, 
+      modelIdToUse, 
+      modelInfo, 
+      watermark,
+      refImageUrls.length > 0 ? refImageUrls : undefined
+    );
     
     if (project_id && sequence_number !== undefined) {
       await db
@@ -97,11 +136,10 @@ const processImageTask = async (taskId: string, params: any) => {
           sequence_number,
           image_prompt: prompt,
           image_url: imageUrl,
-          metadata: { style, size, watermark }
+          metadata: { style, size, watermark, reference_image_ids: reference_image_ids || [] }
         });
     }
 
-    // Update task status
     await db
       .from('tasks')
       .update({ 
@@ -162,42 +200,114 @@ export const getTaskStatus = async (req: AuthenticatedRequest, res: Response): P
   }
 };
 
+export const createCreativeAnalysis = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { product_name, features, model_id } = req.body;
+    
+    console.log('[createCreativeAnalysis] Received:', { product_name, features, model_id });
+    
+    if (!product_name || !features) {
+      res.status(400).json({ success: false, error: req.t('common.missingParams') });
+      return;
+    }
+
+    let modelIdToUse = model_id;
+    
+    if (model_id) {
+      const resolved = await resolveModel({
+        inputModelId: model_id,
+        allowDefault: false,
+        missingModelBehavior: 'silent-keep',
+        logPrefix: 'createCreativeAnalysis'
+      });
+
+      if (resolved.modelInfo) {
+        modelIdToUse = resolved.modelIdToUse;
+        console.log(`[createCreativeAnalysis] Resolved model_id to: ${modelIdToUse}`);
+      }
+    }
+
+    const analysisResult = await generateCreativeAnalysis({
+      productName: product_name,
+      features: Array.isArray(features) ? features : features.split('\n').filter((f: string) => f.trim()),
+      modelId: modelIdToUse
+    });
+
+    res.status(200).json({ 
+      success: true, 
+      analysis: analysisResult
+    });
+  } catch (error) {
+    console.error('Generate creative analysis error:', error);
+    res.status(500).json({ success: false, error: req.t('ai.generationFailed') });
+  }
+};
+
 export const createScript = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    let { product_name, features, duration, style, project_id, images, model_id, model_name } = req.body;
-    console.log('[createScript] Received model_id:', model_id, 'model_name:', model_name);
+    let { 
+      product_name, 
+      features, 
+      duration, 
+      project_id, 
+      model_id, 
+      model_name,
+      video_type,
+      creative_theme,
+      copy_framework,
+      persona_tone,
+      main_selling_points,
+      sub_selling_points,
+      creative_analysis
+    } = req.body;
     
-    if (!product_name || !features || !duration || !style) {
+    console.log('[createScript] Received model_id:', model_id, 'model_name:', model_name);
+    console.log('[createScript] Uploaded files:', req.files?.length);
+    
+    if (!product_name || !features || !duration) {
       res.status(400).json({ success: false, error: req.t('common.missingParams') });
       return;
     }
 
     if (model_id) {
-      let { data } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('id', model_id)
-        .single();
-      
-      if (!data) {
-        const { data: dataByModelId } = await db
-          .from('models')
-          .select('id, Model_ID, provider, type, endpoint')
-          .eq('Model_ID', model_id)
-          .single();
-        data = dataByModelId;
-      }
-      
-      if (data) {
-        // Use Model_ID for the actual API call
-        model_id = data.Model_ID;
+      const resolved = await resolveModel({
+        inputModelId: model_id,
+        allowDefault: false,
+        missingModelBehavior: 'silent-keep',
+        logPrefix: 'createScript'
+      });
+
+      if (resolved.modelInfo) {
+        model_id = resolved.modelIdToUse;
         console.log(`[createScript] Resolved model_id to: ${model_id}`);
       } else {
         console.warn(`[createScript] Model not found for id: ${model_id}, using as is`);
       }
     }
 
-    const scriptContent = await generateScript(product_name, features, duration, style, images, model_id);
+    let processedImages: any[] = [];
+    if (req.files && Array.isArray(req.files)) {
+      processedImages = req.files.map(file => ({
+        name: file.originalname,
+        type: file.mimetype,
+        data: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`
+      }));
+      console.log(`[createScript] Processed ${processedImages.length} images`);
+    }
+
+    const scriptContent = await generateScript({
+      productName: product_name,
+      features: Array.isArray(features) ? features : features.split('\n').filter((f: string) => f.trim()),
+      duration: parseInt(duration) || 5,
+      videoType: video_type,
+      creativeTheme: creative_theme,
+      copyFramework: copy_framework,
+      personaTone: persona_tone,
+      mainSellingPoints: main_selling_points,
+      subSellingPoints: sub_selling_points,
+      images: processedImages.length > 0 ? processedImages : undefined,
+      modelId: model_id
+    });
 
     let savedScriptId = null;
     let savedVersion = 1;
@@ -230,7 +340,19 @@ export const createScript = async (req: AuthenticatedRequest, res: Response): Pr
           version: nextVersion,
           model_id: model_id || null,
           model_name: model_name || null,
-          metadata: { product_name, features, duration, style, has_images: !!images?.length },
+          metadata: { 
+            product_name, 
+            features, 
+            duration, 
+            has_images: !!processedImages?.length,
+            video_type,
+            creative_theme,
+            copy_framework,
+            persona_tone,
+            main_selling_points,
+            sub_selling_points,
+            creative_analysis: creative_analysis || null,
+          },
           created_at: new Date().toISOString()
         });
       
@@ -313,45 +435,13 @@ export const createImage = async (req: AuthenticatedRequest, res: Response): Pro
       return;
     }
 
-    let modelInfo = null;
-    let modelIdToUse = model_id;
-    
-    if (!model_id) {
-      const { data: defaultModel, error: modelError } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('type', 'image')
-        .eq('is_active', 1)
-        .limit(1);
-      
-      if (!modelError && defaultModel && defaultModel.length > 0) {
-        modelInfo = defaultModel[0];
-        modelIdToUse = defaultModel[0].Model_ID;
-        console.log(`Using default image model: ${modelInfo.Model_ID}`);
-      }
-    } else {
-      let { data } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('id', model_id)
-        .single();
-      
-      if (!data) {
-        const { data: dataByModelId } = await db
-          .from('models')
-          .select('id, Model_ID, provider, type, endpoint')
-          .eq('Model_ID', model_id)
-          .single();
-        data = dataByModelId;
-      }
-      
-      if (!data) {
-        res.status(400).json({ success: false, error: 'Model not found' });
-        return;
-      }
-      modelInfo = data;
-      modelIdToUse = data.Model_ID;
-    }
+    const { modelInfo, modelIdToUse } = await resolveModel({
+      inputModelId: model_id,
+      defaultModelType: 'image',
+      allowDefault: true,
+      missingModelBehavior: model_id ? 'throw400' : 'warn-keep',
+      logPrefix: 'createImage'
+    });
 
     // Call generateImage with correct parameter order: prompt, size, style, modelId, modelInfo, watermark
     const imageUrl = await generateImage(prompt, size || '1024x1024', style, modelIdToUse, modelInfo, watermark);
@@ -375,6 +465,10 @@ export const createImage = async (req: AuthenticatedRequest, res: Response): Pro
 
     res.status(200).json({ success: true, image_url: imageUrl });
   } catch (error) {
+    if (error instanceof ModelResolutionError && error.status === 400) {
+      res.status(400).json({ success: false, error: 'Model not found' });
+      return;
+    }
     console.error('Generate image error:', error);
     res.status(500).json({ success: false, error: req.t('ai.generationFailed') });
   }
@@ -455,44 +549,13 @@ const processVideoTask = async (taskId: string, params: any) => {
       seed = projectData?.seed;
     }
 
-    let modelInfo = null;
-    let modelIdToUse = model_id;
-    
-    if (!model_id) {
-      const { data: defaultModel } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('type', 'video')
-        .eq('is_active', 1)
-        .limit(1);
-      
-      if (defaultModel && defaultModel.length > 0) {
-        modelInfo = defaultModel[0];
-        modelIdToUse = defaultModel[0].Model_ID;
-      }
-    } else {
-      let { data } = await db
-        .from('models')
-        .select('id, Model_ID, provider, type, endpoint')
-        .eq('id', model_id)
-        .single();
-      
-      if (!data) {
-        const { data: dataByModelId } = await db
-          .from('models')
-          .select('id, Model_ID, provider, type, endpoint')
-          .eq('Model_ID', model_id)
-          .single();
-        data = dataByModelId;
-      }
-      
-      if (data) {
-        modelInfo = data;
-        modelIdToUse = data.Model_ID;
-      } else {
-        console.warn(`Model not found for id/Model_ID: ${model_id}`);
-      }
-    }
+    const { modelInfo, modelIdToUse } = await resolveModel({
+      inputModelId: model_id,
+      defaultModelType: 'video',
+      allowDefault: true,
+      missingModelBehavior: 'warn-keep',
+      logPrefix: 'processVideoTask'
+    });
 
     const videoParams = { resolution, aspect_ratio, has_audio, demo_mode, seed };
     
