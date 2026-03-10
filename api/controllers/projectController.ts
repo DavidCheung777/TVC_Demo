@@ -7,7 +7,7 @@ interface AuthenticatedRequest extends Request {
 
 export const createProject = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { name, product_info, target_audience, budget } = req.body;
+    const { name, product_info, budget } = req.body;
     const userId = req.user.id;
 
     if (!name || !product_info) {
@@ -23,7 +23,6 @@ export const createProject = async (req: AuthenticatedRequest, res: Response): P
         user_id: userId,
         name,
         product_info,
-        target_audience,
         budget_range: budget,
         status: 'draft',
         seed,

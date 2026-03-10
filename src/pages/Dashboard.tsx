@@ -22,7 +22,6 @@ const Dashboard: React.FC = () => {
   // New project state
   const [newProjectName, setNewProjectName] = useState('');
   const [productInfo, setProductInfo] = useState('');
-  const [targetAudience, setTargetAudience] = useState('');
   const [budget, setBudget] = useState('');
   const [creating, setCreating] = useState(false);
 
@@ -62,14 +61,13 @@ const Dashboard: React.FC = () => {
         body: JSON.stringify({
           name: newProjectName,
           product_info: { description: productInfo },
-          target_audience: targetAudience,
           budget
         })
       });
 
       const data = await response.json();
       if (data.success) {
-        navigate(`/project/${data.project.id}/script`);
+        navigate(`/project/${data.project.id}/script`, { state: { isNewProject: true } });
       }
     } catch (error) {
       console.error('Failed to create project:', error);
@@ -183,30 +181,18 @@ const Dashboard: React.FC = () => {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('dashboard.modal.targetAudience')}</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={targetAudience}
-                    onChange={(e) => setTargetAudience(e.target.value)}
-                    placeholder={t('dashboard.modal.placeholders.targetAudience')}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('dashboard.modal.budgetRange')}</label>
-                  <select
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    value={budget}
-                    onChange={(e) => setBudget(e.target.value)}
-                  >
-                    <option value="">{t('dashboard.modal.budgetOptions.default')}</option>
-                    <option value="low">{t('dashboard.modal.budgetOptions.low')}</option>
-                    <option value="medium">{t('dashboard.modal.budgetOptions.medium')}</option>
-                    <option value="high">{t('dashboard.modal.budgetOptions.high')}</option>
-                  </select>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('dashboard.modal.budgetRange')}</label>
+                <select
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={budget}
+                  onChange={(e) => setBudget(e.target.value)}
+                >
+                  <option value="">{t('dashboard.modal.budgetOptions.default')}</option>
+                  <option value="low">{t('dashboard.modal.budgetOptions.low')}</option>
+                  <option value="medium">{t('dashboard.modal.budgetOptions.medium')}</option>
+                  <option value="high">{t('dashboard.modal.budgetOptions.high')}</option>
+                </select>
               </div>
 
               <div className="flex justify-end gap-3 mt-6">

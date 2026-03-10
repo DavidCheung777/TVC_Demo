@@ -57,9 +57,11 @@ export const uploadToTOS = async (objectKey: string, content: Buffer | string): 
         throw new Error('TOS client is not initialized. Please check your environment variables.');
     }
 
+    const body = typeof content === 'string' ? Buffer.from(content) : content;
+
     await client.putObject({
         bucket,
         key: objectKey,
-        body: content,
+        body: body as any,
     });
 }

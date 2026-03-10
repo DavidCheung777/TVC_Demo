@@ -10,7 +10,6 @@ interface Project {
   user_name?: string;
   user_email?: string;
   product_info: any;
-  target_audience: string;
   budget_range: string;
   status: string;
   created_at: string;
@@ -324,10 +323,6 @@ const ProjectManagement: React.FC = () => {
                           ? selectedProject.product_info 
                           : (selectedProject.product_info as any)?.description || JSON.stringify(selectedProject.product_info || {}) || '-'}
                       </p>
-                    </div>
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="text-sm font-medium text-gray-500 mb-2">{t('admin.projects.detail.targetAudience')}</h3>
-                      <p className="text-gray-900">{selectedProject.target_audience || '-'}</p>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <h3 className="text-sm font-medium text-gray-500 mb-2">{t('admin.projects.detail.budget')}</h3>

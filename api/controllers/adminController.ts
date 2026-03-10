@@ -97,7 +97,7 @@ export const getModels = async (req: AuthenticatedRequest, res: Response): Promi
   try {
     const { data, error } = await db
       .from('models')
-      .select('id as row_id, Model_ID as id, provider, type, api_key, is_active, endpoint, created_at')
+      .select('id, Model_ID, provider, type, api_key, is_active, endpoint, created_at')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -114,27 +114,27 @@ export const getModels = async (req: AuthenticatedRequest, res: Response): Promi
 
 export const createModel = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { id, provider, endpoint, type, api_key, is_active } = req.body;
+    const { Model_ID, provider, endpoint, type, api_key, is_active } = req.body;
 
-    if (!id || !provider || !type) {
+    if (!Model_ID || !provider || !type) {
         res.status(400).json({ success: false, error: req.t('common.missingParams') });
         return;
     }
 
-    const row_id = Math.random().toString(36).substring(2, 12);
+    const newId = Math.random().toString(36).substring(2, 12);
 
     const { data, error } = await db
       .from('models')
       .insert({
-        id: row_id,
-        Model_ID: id,
+        id: newId,
+        Model_ID,
         provider,
         endpoint,
         type,
         api_key,
         is_active: is_active ?? true
       })
-      .select('id as row_id, Model_ID as id, provider, type, api_key, is_active, endpoint, created_at')
+      .select('id, Model_ID, provider, type, api_key, is_active, endpoint, created_at')
       .single();
 
     if (error) {
@@ -154,16 +154,11 @@ export const updateModel = async (req: AuthenticatedRequest, res: Response): Pro
     const { id } = req.params;
     const updates = req.body;
 
-    if (updates.id) {
-      updates.Model_ID = updates.id;
-      delete updates.id;
-    }
-
     const { data, error } = await db
       .from('models')
       .update(updates)
       .eq('id', id)
-      .select('id as row_id, Model_ID as id, provider, type, api_key, is_active, endpoint, created_at')
+      .select('id, Model_ID, provider, type, api_key, is_active, endpoint, created_at')
       .single();
 
     if (error) {
@@ -376,12 +371,18 @@ export const getProjects = async (req: AuthenticatedRequest, res: Response): Pro
       .select('id, name, email')
       .in('id', userIds);
     
-    const userMap = new Map((users || []).map((u: any) => [u.id, u]));
+    interface User {
+      id: string;
+      name?: string;
+      email?: string;
+    }
+
+    const userMap = new Map<string, User>((users || []).map((u: any) => [u.id, u]));
     
     const projectsWithUsers = filteredData.map((p: any) => ({
       ...p,
-      user_name: userMap.get(p.user_id)?.name || p.user_id,
-      user_email: userMap.get(p.user_id)?.email || ''
+      user_name: (userMap.get(p.user_id) as User)?.name || p.user_id,
+      user_email: (userMap.get(p.user_id) as User)?.email || ''
     }));
 
     const total = filteredData.length;

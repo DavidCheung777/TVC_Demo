@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import ProjectDetail from './pages/ProjectDetail';
 import CreateScript from './pages/CreateScript';
 import CreateStoryboard from './pages/CreateStoryboard';
 import CreateVideo from './pages/CreateVideo';
@@ -40,6 +41,12 @@ function App() {
           <Route path="dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="project/:id" element={
+            <ProtectedRoute>
+              <ProjectDetail />
             </ProtectedRoute>
           } />
           

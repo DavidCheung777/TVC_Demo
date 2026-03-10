@@ -5,117 +5,347 @@ import { db } from './db.js';
 
 dotenv.config();
 
-const API_KEY = process.env.ARK_API_KEY || process.env.OPENAI_API_KEY;
-const BASE_URL = process.env.ARK_BASE_URL || process.env.OPENAI_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3';
-const TEXT_MODEL = process.env.ARK_MODEL_ID || 'doubao-pro-32k';
-
-if (!API_KEY) {
-  console.warn('ARK_API_KEY or OPENAI_API_KEY is not set. AI features will fallback to mock data.');
+interface ProviderConfig {
+  endpoint: string;
+  api_key: string;
 }
 
-const client = axios.create({
-  baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_KEY}`,
-  },
-  timeout: 120000,
-});
+async function getProviderConfig(): Promise<ProviderConfig> {
+  try {
+    const { data: providers, error } = await db
+      .from('providers')
+      .select('*')
+      .eq('is_active', 1)
+      .order('id', { ascending: true })
+      .limit(1);
 
-export const generateScript = async (productName: string, features: string[], duration: number, style: string, images?: { name: string, type: string, data: string }[], modelId?: string) => {
-  console.log('[generateScript] Received modelId:', modelId);
-  // If no API key, use mock implementation
-  if (!API_KEY) {
-    console.log(`[Mock] Generating script for ${productName} (${style}, ${duration}s)`);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const sceneCount = duration <= 5 ? 3 : duration <= 10 ? 4 : 5;
-        const baseDuration = Math.floor(duration / sceneCount);
-        
-        const scenes = [];
-        for (let i = 1; i <= sceneCount; i++) {
-          let visual = '';
-          let audio = '';
-          let sceneDuration = baseDuration;
-          
-          switch (i) {
-            case 1:
-              visual = `Opening shot of ${productName} in a well-lit, modern environment. Camera pans slowly to reveal its sleek design. Soft lighting highlights the product's premium finish.`;
-              audio = `Introducing the all-new ${productName}. Designed for those who appreciate excellence.`;
-              sceneDuration = baseDuration + 1;
-              break;
-            case 2:
-              visual = `Close-up shot focusing on ${features[0] || 'innovative technology'}. A user's hand interacts with the product, demonstrating its intuitive interface. Cinematic depth of field.`;
-              audio = `Experience the power of ${features[0] || 'innovation'} at your fingertips.`;
-              sceneDuration = baseDuration;
-              break;
-            case 3:
-              visual = `Lifestyle shot in a contemporary living space. The ${productName} seamlessly integrates into daily life, bringing joy and convenience. Natural lighting, warm tones.`;
-              audio = `It's not just a product, it's a lifestyle upgrade.`;
-              sceneDuration = baseDuration;
-              break;
-            case 4:
-              visual = features[1] 
-                ? `Feature highlight: ${features[1]}. Dynamic camera movement showcases the product's versatility. Split-screen effect showing multiple use cases.`
-                : `Multiple users enjoy ${productName} together. Laughter and smiles fill the frame. The product brings people closer.`;
-              audio = features[1] 
-                ? `${features[1]}. Making every moment count.`
-                : `Share the experience. Share the joy.`;
-              sceneDuration = baseDuration;
-              break;
-            case 5:
-              visual = `Product logo appears on screen with a call to action: "Available Now". Background fades to elegant brand colors. Subtle particle effects add premium feel.`;
-              audio = `${productName}. Elevate your world. Get yours today.`;
-              sceneDuration = baseDuration - 1;
-              break;
-          }
-          
-          scenes.push({
-            scene_number: i,
-            visual,
-            audio,
-            duration: Math.max(1, sceneDuration)
-          });
-        }
-        
-        resolve({
-          title: `${productName} - ${style.charAt(0).toUpperCase() + style.slice(1)} Campaign`,
-          total_duration: duration,
-          style: style,
-          scenes
-        });
-      }, 1500);
+    if (!error && providers && providers.length > 0) {
+      const provider = providers[0];
+      return {
+        endpoint: provider.endpoint,
+        api_key: provider.api_key
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to get provider config from database, falling back to environment variables');
+  }
+
+  return {
+    endpoint: process.env.ARK_BASE_URL || process.env.OPENAI_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3',
+    api_key: process.env.ARK_API_KEY || process.env.OPENAI_API_KEY || ''
+  };
+}
+
+let config: ProviderConfig | null = null;
+let client: any = null;
+
+async function initClient() {
+  if (!config) {
+    config = await getProviderConfig();
+  }
+  if (!client) {
+    client = axios.create({
+      baseURL: config.endpoint,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.api_key}`,
+      },
+      timeout: 120000,
     });
+  }
+  return { config, client };
+}
+
+const TEXT_MODEL = process.env.ARK_MODEL_ID || 'doubao-pro-32k';
+
+export interface ScriptGenerationParams {
+  productName: string;
+  features: string[];
+  duration: number;
+  videoType?: string;
+  creativeTheme?: string;
+  copyFramework?: string;
+  personaTone?: string;
+  mainSellingPoints?: string;
+  subSellingPoints?: string;
+  images?: { name: string; type: string; data: string }[];
+  modelId?: string;
+}
+
+export interface CreativeAnalysisParams {
+  productName: string;
+  features: string[];
+  modelId?: string;
+}
+
+export interface CreativeAnalysisResult {
+  main_selling_points: string;
+  sub_selling_points: string;
+  user_insight: string;
+  video_type: string;
+  creative_theme: string;
+  copy_framework: string;
+  persona_tone: string;
+  script_content: string;
+}
+
+export const generateCreativeAnalysis = async (params: CreativeAnalysisParams): Promise<CreativeAnalysisResult> => {
+  const { productName, features, modelId } = params;
+
+  console.log('[generateCreativeAnalysis] Received modelId:', modelId);
+
+  const { config } = await initClient();
+
+  if (!config.api_key) {
+    throw new Error('API key not configured');
   }
 
   try {
+    const { client } = await initClient();
     const modelToUse = modelId || TEXT_MODEL;
-    console.log(`[Real API] Generating script for ${productName} with model ${modelToUse}`);
-    
-    const systemPrompt = `You are a professional video script writer. Your task is to generate a video script for a product advertisement.
-The output must be a valid JSON object with the following structure:
+    console.log(`Generating creative analysis for ${productName} with model ${modelToUse}`);
+
+    const systemPrompt = `你是一位专业的短视频广告编剧编导，擅长创作抖音电商短视频内容。请根据产品信息，生成创作分析。
+
+## 输出要求
+
+请输出以下内容：
+
+### 1. 产品主次卖点
+- 主卖点：1-2个核心价值点，作为信息锚点
+- 次卖点：2-3个衍生价值点，丰富内容层次
+
+### 2. 用户洞察
+分析目标人群特征和心理需求：
+- 人群：年龄/身份/场景特征/人生阶段等
+- 用户心理：痛点场景、生活方式、社交情绪、价格敏感度、兴趣偏好等
+
+### 3. 视频类型
+从以下类型中选择1个最合适的：
+- single_person: 单人口播
+- multi_person: 多人口播
+- drama: 剧情演绎
+- vlog: Vlog记录
+- mix_cut: 混剪
+
+### 4. 创意主题
+从以下主题中选择1个最合适的：
+- product_showcase: 产品展示
+- pain_point: 痛点讲述
+- boss_ip: 老板IP
+- factory_trace: 工厂溯源
+- unboxing: 开箱评测
+- life_scene: 生活场景
+- comparison: 对比测评
+- emotional: 情感共鸣
+
+### 5. 文案框架
+从以下框架中选择1个最合适的：
+- AIDA: AIDA暴力转化模型
+- SUCCESS: SUCCESS病毒模型
+- GOLDEN_CIRCLE: 黄金圈法则
+- HOOKED: Hooked上瘾模型
+- FAB: FAB法则
+- PAS: PAS问题解决
+- 6WH1: 6WH1场景构建
+- ENFP/INFP/INTJ/ESTP等: MBTI人格化叙事
+
+### 6. 人设与语气
+设定讲述者的身份定位和表达风格
+
+### 7. 口播文案
+撰写完整的口播文案（20-30秒），要求：
+- 加入"人味噪点"：轻微的犹豫、自我修正、吐槽、感叹
+- 遵循认知规律：自然表达节奏，避免公式化
+- 完整口播内容，非片段
+
+## 输出格式
+
+必须返回有效的JSON对象，结构如下：
 {
-  "title": "Script Title",
+  "main_selling_points": "主卖点描述",
+  "sub_selling_points": "次卖点描述",
+  "user_insight": "用户洞察分析",
+  "video_type": "视频类型代码",
+  "creative_theme": "创意主题代码",
+  "copy_framework": "文案框架代码",
+  "persona_tone": "人设与语气描述",
+  "script_content": "完整的口播文案内容"
+}
+
+只返回JSON对象，不要有markdown格式或额外说明。`;
+
+    const requestBody = {
+      model: modelToUse,
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: `请为以下产品生成创作分析：
+
+## 产品信息
+- 产品名称：${productName}
+- 产品特点：${features.join('、')}
+
+请输出完整的创作分析内容。`
+        }
+      ],
+    };
+
+    const response = await client.post('/chat/completions', requestBody);
+
+    const content = response.data.choices[0].message.content;
+    console.log('Creative Analysis API Response:', content);
+
+    let analysisData;
+    try {
+      const cleanContent = content.replace(/```json\n?|\n?```/g, '');
+      analysisData = JSON.parse(cleanContent);
+    } catch (e) {
+      console.error('Failed to parse creative analysis response as JSON:', e);
+      throw new Error('Invalid response format from AI');
+    }
+
+    return analysisData;
+
+  } catch (error: any) {
+    console.error('Creative Analysis Service Error:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.error?.message || 'Failed to generate creative analysis via AI');
+  }
+};
+
+export const generateScript = async (params: ScriptGenerationParams) => {
+  const { 
+    productName, 
+    features, 
+    duration, 
+    videoType = 'single_person',
+    creativeTheme = 'product_showcase',
+    copyFramework = 'AIDA',
+    personaTone = 'friendly_professional',
+    mainSellingPoints = '',
+    subSellingPoints = '',
+    images, 
+    modelId 
+  } = params;
+
+  console.log('[generateScript] Received modelId:', modelId);
+  
+  const { config } = await initClient();
+  
+  if (!config.api_key) {
+    throw new Error('API key not configured');
+  }
+
+  try {
+    const { client } = await initClient();
+    const modelToUse = modelId || TEXT_MODEL;
+    console.log(`Generating script for ${productName} with model ${modelToUse}`);
+    
+    const systemPrompt = `你是一位专业的短视频广告编剧编导，擅长创作抖音电商短视频内容。请按照以下8步创作逻辑生成完整的广告脚本：
+
+## 创作流程
+
+### 1. 产品主次卖点分析
+- 主卖点：1-2个核心价值点，作为信息锚点
+- 次卖点：2-3个衍生价值点，丰富内容层次
+
+### 2. 用户洞察
+分析目标人群特征和心理需求：
+- 痛点场景与功能需求
+- 生活方式与价值认同
+- 社交情绪与心理需求
+- 价格敏感与性价比认知
+- 兴趣偏好与文化符号
+
+### 3. 视频类型
+- 单人口播：单人面对镜头讲解
+- 多人口播：多人对话或互动
+- 剧情：有连续情节的故事
+- vlog记录：第一人称视角
+- 混剪：多画面剪辑拼接
+
+### 4. 创意主题
+视频的核心创意方向，如：老板IP、明星代言、产品痛点讲述、工厂溯源、打假测评、开箱评测、生活场景演绎等
+
+### 5. 文案框架
+- AIDA暴力转化：Attention → Interest → Desire → Action
+- SUCCESS病毒模型：Simple + Unexpected + Concrete + Credible + Emotional + Story
+- 黄金圈法则：Why → How → What
+- Hooked上瘾模型：Trigger → Action → Reward → Investment
+- FAB法则：Feature → Advantage → Benefit
+- PAS问题解决：Problem → Agitate → Solution
+- 6WH1：Who/What/When/Where/Why/How
+- MBTI人格化叙事：16种人格风格
+
+### 6. 人设与语气
+设定讲述者的身份定位和表达风格
+
+### 7. 口播文案撰写要求
+- 加入"人味噪点"：轻微的犹豫、自我修正、吐槽、感叹
+- 遵循认知规律：自然表达节奏，避免公式化
+- 时长控制：短视频一般20-30秒
+- 完整口播内容，非片段
+
+### 8. 分镜脚本撰写
+每个分镜包含：
+- 场景编号和时长
+- 口播文案
+- 画面类型和描述
+- 多模态提示词（用于AI生成画面/视频）
+
+## 输出格式要求
+
+必须返回有效的JSON对象，结构如下：
+{
+  "analysis": {
+    "main_selling_points": "主卖点描述",
+    "sub_selling_points": "次卖点描述",
+    "user_insight": "用户洞察分析",
+    "video_type": "视频类型",
+    "creative_theme": "创意主题",
+    "copy_framework": "文案框架",
+    "persona_tone": "人设与语气"
+  },
+  "title": "脚本标题",
+  "total_duration": 总时长,
   "scenes": [
     {
       "scene_number": 1,
-      "visual": "Description of the visual",
-      "audio": "Voiceover or dialogue",
-      "duration": 5 (in seconds)
+      "duration": 5,
+      "audio": "完整的口播文案内容",
+      "visual_type": "画面类型（如：产品特写/生活场景/人物互动等）",
+      "visual": "详细的画面描述",
+      "image_prompt": "用于AI生成图片的英文提示词，包含：主体、动作、环境、光线、风格等",
+      "video_prompt": "用于AI生成视频的英文提示词，包含：镜头运动、人物动作、场景转换等"
     }
   ]
 }
-Ensure the total duration is approximately ${duration} seconds. Return ONLY the JSON object, no markdown formatting or explanation.`;
+
+确保总时长约为${duration}秒。只返回JSON对象，不要有markdown格式或额外说明。`;
 
     const userContent: any[] = [
       {
         type: "text",
-        text: `Product Name: ${productName}
-Features: ${features.join(', ')}
-Style: ${style}
-Duration: ${duration} seconds
+        text: `请为以下产品创作短视频广告脚本：
 
-Create a script that highlights these features in the requested style.`
+## 产品信息
+- 产品名称：${productName}
+- 产品特点：${features.join('、')}
+${mainSellingPoints ? `- 主卖点（可选参考）：${mainSellingPoints}` : ''}
+${subSellingPoints ? `- 次卖点（可选参考）：${subSellingPoints}` : ''}
+
+## 创作要求
+- 视频时长：${duration}秒
+- 视频类型：${videoType}
+- 创意主题：${creativeTheme}
+- 文案框架：${copyFramework}
+- 人设语气：${personaTone}
+
+请按照8步创作逻辑，输出完整的分析内容和分镜脚本。`
       }
     ];
 
@@ -188,36 +418,19 @@ export const generateImage = async (
   style?: string,
   modelId?: string,
   modelInfo?: { id?: string; Model_ID?: string; name?: string; provider?: string; endpoint?: string; type?: string; apiKey?: string },
-  watermark?: boolean
+  watermark?: boolean,
+  referenceImageUrls?: string[]
 ): Promise<string> => {
-  const mockImages = [
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1560343090-f0409e92791a?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1585386959984-a4155224a1ad?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1491553895911-0055uj8e0es?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=1024&h=1024&fit=crop',
-    'https://images.unsplash.com/photo-1585155770913-5bca09b66794?w=1024&h=1024&fit=crop'
-  ];
-  
-  // If no model info, use mock implementation
   if (!modelInfo) {
-    console.log(`[Mock] Generating image for prompt: ${prompt?.substring(0, 50)}...`);
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * mockImages.length);
-        resolve(mockImages[randomIndex]);
-      }, 1500);
-    });
+    throw new Error('Model info is required for image generation');
   }
 
   try {
-    console.log(`[Real API] Generating image with model:`, modelInfo?.name, 'id:', modelInfo?.id);
+    console.log(`Generating image with model:`, modelInfo?.name, 'id:', modelInfo?.id);
+    if (referenceImageUrls && referenceImageUrls.length > 0) {
+      console.log(`Using ${referenceImageUrls.length} reference images`);
+    }
     
-    // Get provider info from database
     const { data: providerData, error } = await db
       .from('providers')
       .select('*')
@@ -225,8 +438,7 @@ export const generateImage = async (
     
     if (error || !providerData || providerData.length === 0) {
       console.error('Provider not found for model:', modelInfo.id, 'provider code:', modelInfo.provider);
-      const randomIndex = Math.floor(Math.random() * mockImages.length);
-      return mockImages[randomIndex];
+      throw new Error('Provider not found');
     }
 
     const provider = providerData[0];
@@ -235,36 +447,38 @@ export const generateImage = async (
     
     if (!apiKey || !endpoint) {
       console.error('Provider missing api_key or endpoint:', provider.name);
-      const randomIndex = Math.floor(Math.random() * mockImages.length);
-      return mockImages[randomIndex];
+      throw new Error('Provider configuration missing');
     }
     
     const modelIdToUse = provider.model_ids?.split(',')[0] || modelInfo.Model_ID || modelInfo.id || modelId;
     
     if (!modelIdToUse) {
       console.error('No model ID found for image generation');
-      const randomIndex = Math.floor(Math.random() * mockImages.length);
-      return mockImages[randomIndex];
+      throw new Error('Model ID not found');
+    }
+    
+    const requestBody: any = {
+      model: modelIdToUse,
+      prompt: prompt,
+      size: size,
+      response_format: 'url',
+      watermark: watermark !== undefined ? watermark : false,
+      sequential_image_generation: 'disabled'
+    };
+
+    if (referenceImageUrls && referenceImageUrls.length > 0) {
+      requestBody.image = referenceImageUrls;
     }
     
     console.log(`Calling image API at ${endpoint} with model ${modelIdToUse}`);
     console.log(`Request payload:`, JSON.stringify({
-      model: modelIdToUse,
-      prompt: prompt.substring(0, 100) + '...',
-      size: size,
-      response_format: 'url'
+      ...requestBody,
+      prompt: prompt.substring(0, 100) + '...'
     }));
     
-    // Call the actual image generation API (火山引擎 OpenAI compatible)
     const response = await axios.post(
       `${endpoint}/images/generations`,
-      {
-        model: modelIdToUse,
-        prompt: prompt,
-        size: size,
-        response_format: 'url',
-        watermark: watermark !== undefined ? watermark : false
-      },
+      requestBody,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -285,15 +499,10 @@ export const generateImage = async (
       return imageUrl;
     }
     
-    // Fallback to mock if no URL returned
-    console.log('No image URL in response, using mock');
-    const randomIndex = Math.floor(Math.random() * mockImages.length);
-    return mockImages[randomIndex];
-  } catch (error) {
+    throw new Error('No image URL in response');
+  } catch (error: any) {
     console.error('Image generation error:', error.response?.data || error.message || error);
-    // Fallback to mock on error
-    const randomIndex = Math.floor(Math.random() * mockImages.length);
-    return mockImages[randomIndex];
+    throw new Error(error.response?.data?.error?.message || 'Failed to generate image');
   }
 };
 
@@ -306,24 +515,12 @@ export const generateVideo = async (
   params?: { resolution?: string; aspect_ratio?: string; has_audio?: boolean; demo_mode?: boolean; seed?: number }
 ): Promise<any> => {
   
-  // If no model info, use mock implementation
   if (!modelInfo) {
-    console.log('[Mock] Simulating video generation for:', storyboards.length, 'scenes');
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-          thumbnail_url: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1920&h=1080&fit=crop',
-          duration: duration,
-          scenes: storyboards.length,
-          music: music || 'Default Background'
-        });
-      }, 2000);
-    });
+    throw new Error('Model info is required for video generation');
   }
 
   try {
-    console.log('[Real API] Generating video with model:', modelInfo?.name, 'id:', modelInfo?.id);
+    console.log('Generating video with model:', modelInfo?.name, 'id:', modelInfo?.id);
     
     // Get provider info from database
     const { data: providerData, error } = await db
@@ -333,17 +530,12 @@ export const generateVideo = async (
     
     if (error || !providerData || providerData.length === 0) {
       console.error('Provider not found for model:', modelInfo.id, 'provider code:', modelInfo.provider);
-      return {
-        video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        thumbnail_url: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1920&h=1080&fit=crop',
-        duration: duration,
-        scenes: storyboards.length
-      };
+      throw new Error('Provider not found');
     }
 
     const provider = providerData[0];
-    const apiKey = provider.api_key || API_KEY;
-    const baseUrl = provider.endpoint || BASE_URL;
+    const apiKey = provider.api_key;
+    const baseUrl = provider.endpoint;
 
     // For single scene video generation (image to video)
     if (storyboards.length === 1 && storyboards[0].image_url) {
@@ -370,19 +562,25 @@ export const generateVideo = async (
       const isDraft = params?.demo_mode === true;
       const resolution = isDraft ? '480p' : (params?.resolution || '720p');
 
+      let videoDuration = scene.duration || duration || 5;
+      const modelIdLower = (modelInfo.Model_ID || modelInfo.id || '').toLowerCase();
+      if (modelIdLower.includes('seedance-1-5') || modelIdLower.includes('seedance-1.5')) {
+        videoDuration = Math.min(videoDuration, 12);
+      }
+
       const requestBody = {
         model: modelInfo.Model_ID || modelInfo.id,
         content: content,
         resolution: resolution,
         ratio: params?.aspect_ratio || '16:9',
-        duration: scene.duration || duration || 5,
+        duration: videoDuration,
         generate_audio: params?.has_audio !== false,
         draft: isDraft,
         watermark: false,
         seed: params?.seed
       };
 
-      console.log('[Real API] Video request body:', JSON.stringify(requestBody, null, 2));
+      console.log('Video request body:', JSON.stringify(requestBody, null, 2));
 
       const videoClient = axios.create({
         baseURL: baseUrl,
@@ -396,7 +594,7 @@ export const generateVideo = async (
       // API endpoint for video generation
       const response = await videoClient.post('/contents/generations/tasks', requestBody);
       
-      console.log('[Real API] Video response:', JSON.stringify(response.data, null, 2));
+      console.log('Video response:', JSON.stringify(response.data, null, 2));
 
       const result = response.data;
       const taskId = result.id;
@@ -418,25 +616,11 @@ export const generateVideo = async (
       }
     }
 
-    // For multiple scenes or no image - use mock
-    console.log('Using mock video for multiple scenes or no image');
-    return {
-      video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      thumbnail_url: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1920&h=1080&fit=crop',
-      duration: duration,
-      scenes: storyboards.length,
-      music: music || 'Default Background'
-    };
+    throw new Error('Multiple scenes or no image not supported yet');
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Video generation error:', error.response?.data || error.message || error);
-    // Fallback to mock on error
-    return {
-      video_url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      thumbnail_url: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=1920&h=1080&fit=crop',
-      duration: duration,
-      scenes: storyboards.length
-    };
+    throw new Error(error.response?.data?.error?.message || 'Failed to generate video');
   }
 };
 

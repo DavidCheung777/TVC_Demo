@@ -22,6 +22,7 @@ import scriptRoutes from './routes/scripts.js';
 import storyboardRoutes from './routes/storyboards.js';
 import videoRoutes from './routes/videos.js';
 import promptRoutes from './routes/prompts.js';
+import referenceImageRoutes from './routes/referenceImages.js';
 
 // for esm mode
 const __filename = fileURLToPath(import.meta.url)
@@ -36,6 +37,7 @@ app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(i18nMiddleware);
+app.use('/uploads', express.static(path.resolve(__dirname, '../uploads')));
 
 /**
  * API Routes
@@ -50,6 +52,7 @@ app.use('/api/scripts', scriptRoutes);
 app.use('/api/storyboards', storyboardRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/prompts', promptRoutes);
+app.use('/api/reference-images', referenceImageRoutes);
 
 /**
  * health

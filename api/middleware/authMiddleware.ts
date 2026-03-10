@@ -1,6 +1,10 @@
 import { type Request, type Response, type NextFunction } from 'express';
 import { db } from '../services/db.js';
 
+export interface AuthenticatedRequest extends Request {
+  user?: any;
+}
+
 export const authenticateUser = async (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
 

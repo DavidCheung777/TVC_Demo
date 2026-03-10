@@ -33,4 +33,27 @@ router.get('/project/:project_id', authenticateUser, async (req, res) => {
   }
 });
 
+router.get('/script/:script_id', authenticateUser, async (req, res) => {
+  try {
+    const { script_id } = req.params;
+
+    const { data, error } = await db
+      .from('videos')
+      .select('*')
+      .eq('script_id', script_id)
+      .order('created_at', false);
+
+    if (error) {
+      console.error('Failed to fetch videos:', error);
+      res.status(500).json({ success: false, error: 'Failed to fetch videos' });
+      return;
+    }
+
+    res.status(200).json({ success: true, videos: data });
+  } catch (error) {
+    console.error('Get script videos error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
+});
+
 export default router;

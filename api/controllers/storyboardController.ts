@@ -38,3 +38,31 @@ export const getProjectStoryboards = async (req: AuthenticatedRequest, res: Resp
     res.status(500).json({ success: false, error: req.t('common.error') });
   }
 };
+
+export const getScriptStoryboards = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const { script_id } = req.params;
+
+    if (!script_id) {
+      res.status(400).json({ success: false, error: req.t('common.missingParams') });
+      return;
+    }
+
+    const { data, error } = await db
+      .from('storyboards')
+      .select('*')
+      .eq('script_id', script_id)
+      .order('sequence_number', true);
+
+    if (error) {
+      console.error('Failed to fetch storyboards:', error);
+      res.status(500).json({ success: false, error: req.t('common.error') });
+      return;
+    }
+
+    res.status(200).json({ success: true, storyboards: data });
+  } catch (error) {
+    console.error('Get script storyboards error:', error);
+    res.status(500).json({ success: false, error: req.t('common.error') });
+  }
+};

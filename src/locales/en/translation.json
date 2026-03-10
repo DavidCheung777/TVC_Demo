@@ -58,7 +58,6 @@
       "title": "Create New Project",
       "projectName": "Project Name",
       "productDesc": "Product Description",
-      "targetAudience": "Target Audience",
       "budgetRange": "Budget Range",
       "cancel": "Cancel",
       "create": "Create",
@@ -66,8 +65,7 @@
       "creating": "Creating...",
       "placeholders": {
         "projectName": "e.g. Summer Campaign 2024",
-        "productDesc": "Describe your product, key features, and unique selling points...",
-        "targetAudience": "e.g. Young professionals"
+        "productDesc": "Describe your product, key features, and unique selling points..."
       },
       "budgetOptions": {
         "default": "Select range",
@@ -95,7 +93,6 @@
     "duration": "Duration (seconds)",
     "customDuration": "Custom",
     "customDurationPlaceholder": "Enter duration (seconds)",
-    "style": "Style",
     "generate": "Generate Script",
     "generating": "Generating...",
     "output": "Generated Script",
@@ -103,12 +100,6 @@
     "visual": "Visual",
     "audio": "Audio",
     "proceed": "Proceed to Storyboard",
-    "styles": {
-      "modern": "Modern & Energetic",
-      "emotional": "Emotional & Story-driven",
-      "professional": "Professional & Corporate",
-      "humorous": "Humorous & Fun"
-    },
     "placeholder": {
       "script": "Generated script will appear here",
       "features": "- High performance\n- Eco-friendly\n- Affordable"
@@ -340,7 +331,6 @@
         "status": "Status",
         "createdAt": "Created At",
         "productInfo": "Product Info",
-        "targetAudience": "Target Audience",
         "budget": "Budget Range",
         "scripts": "Scripts",
         "storyboards": "Storyboards",

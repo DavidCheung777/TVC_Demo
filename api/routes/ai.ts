@@ -1,8 +1,10 @@
 import { Router } from 'express';
+import multer from 'multer';
 import { authenticateUser } from '../middleware/authMiddleware.js';
-import { createScript, createImage, createImageTask, getTaskStatus, createVideo, createVideoTask, getModels } from '../controllers/aiController.js';
+import { createScript, createImage, createImageTask, getTaskStatus, createVideo, createVideoTask, getModels, createCreativeAnalysis } from '../controllers/aiController.js';
 
 const router = Router();
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Apply auth middleware to all routes
 router.use(authenticateUser);
@@ -11,7 +13,13 @@ router.use(authenticateUser);
  * Generate Script
  * POST /api/ai/generate-script
  */
-router.post('/generate-script', createScript);
+router.post('/generate-script', upload.array('images', 10), createScript);
+
+/**
+ * Generate Creative Analysis
+ * POST /api/ai/generate-creative-analysis
+ */
+router.post('/generate-creative-analysis', createCreativeAnalysis);
 
 /**
  * Generate Image (sync - deprecated, use async version)

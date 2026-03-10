@@ -4,14 +4,13 @@ import { useAuthStore } from '../../store/authStore';
 import { Loader2, Plus, Box, Trash2, Edit2 } from 'lucide-react';
 
 interface Model {
-  row_id: string;
   id: string;
+  Model_ID: string;
   provider: string;
   endpoint?: string;
   type: string;
   api_key: string;
 }
-
 interface Provider {
   id: string;
   name: string;
@@ -96,14 +95,14 @@ const ModelManagement: React.FC = () => {
     e.preventDefault();
     try {
       if (editingModel) {
-        const response = await fetch(`/api/admin/models/${editingModel.row_id}`, {
+        const response = await fetch(`/api/admin/models/${editingModel.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            id: formData.name,
+            Model_ID: formData.name,
             provider: formData.provider,
             type: formData.type,
             api_key: formData.api_key
@@ -111,15 +110,15 @@ const ModelManagement: React.FC = () => {
         });
         const data = await response.json();
         if (data.success) {
-          setModels(models.map(m => m.row_id === editingModel.row_id ? data.model : m));
+          setModels(models.map(m => m.id === editingModel.id ? data.model : m));
         }
       } else {
         const modelIds = formData.model_ids.split(';').map(id => id.trim()).filter(id => id);
         
         if (modelIds.length === 0) return;
 
-        const requests = modelIds.map(id => ({
-          id: id,
+        const requests = modelIds.map(Model_ID => ({
+          Model_ID,
           provider: formData.provider,
           type: formData.type,
           api_key: formData.api_key
@@ -152,9 +151,9 @@ const ModelManagement: React.FC = () => {
   const handleEditModel = (model: Model) => {
     setEditingModel(model);
     setFormData({
-      name: model.id,
+      name: model.Model_ID || model.id,
       provider: model.provider,
-      model_ids: model.id,
+      model_ids: model.Model_ID || model.id,
       type: model.type,
       api_key: model.api_key || ''
     });
@@ -169,17 +168,17 @@ const ModelManagement: React.FC = () => {
 
   const confirmDeleteModel = async () => {
     if (!deletingModel) return;
-    if (deleteConfirmName !== deletingModel.id) {
+    if (deleteConfirmName !== (deletingModel.Model_ID || deletingModel.id)) {
       setDeleteError(t('admin.models.confirmNameMismatch'));
       return;
     }
     try {
-      const response = await fetch(`/api/admin/models/${deletingModel.row_id}`, {
+      const response = await fetch(`/api/admin/models/${deletingModel.id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (response.ok) {
-        setModels(models.filter(m => m.row_id !== deletingModel.row_id));
+        setModels(models.filter(m => m.id !== deletingModel.id));
         setDeletingModel(null);
         setDeleteConfirmName('');
         setDeleteError('');
@@ -227,11 +226,11 @@ const ModelManagement: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {models.map((model) => (
-                <tr key={model.row_id} className="hover:bg-gray-50">
+                <tr key={model.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Box className="w-5 h-5 text-gray-400 mr-3" />
-                      <div className="text-sm font-medium text-gray-900">{model.id}</div>
+                      <div className="text-sm font-medium text-gray-900">{model.Model_ID || model.id}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -336,7 +335,7 @@ const ModelManagement: React.FC = () => {
           <div className="bg-white rounded-xl max-w-md w-full p-6 space-y-6">
             <h3 className="text-xl font-bold text-gray-900">{t('admin.models.deleteTitle')}</h3>
             <p className="text-gray-600">
-              {t('admin.models.deleteConfirmMessage', { name: deletingModel.id })}
+              {t('admin.models.deleteConfirmMessage', { name: deletingModel.Model_ID || deletingModel.id })}
             </p>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -352,7 +351,7 @@ const ModelManagement: React.FC = () => {
                   setDeleteConfirmName(e.target.value);
                   setDeleteError('');
                 }}
-                placeholder={deletingModel.id}
+                placeholder={deletingModel.Model_ID || deletingModel.id}
               />
               {deleteError && (
                 <p className="mt-2 text-sm text-red-600">{deleteError}</p>

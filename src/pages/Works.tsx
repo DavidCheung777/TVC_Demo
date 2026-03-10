@@ -61,7 +61,7 @@ const Works: React.FC = () => {
               <div className="p-4">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1">{work.name}</h3>
                 <p className="text-sm text-gray-500 mb-4">{new Date(work.created_at).toLocaleDateString()}</p>
-                <Link to={`/project/${work.id}/video`} className="block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-lg hover:bg-gray-100 transition text-sm font-medium">
+                <Link to={`/project/${work.id}`} className="block w-full text-center bg-gray-50 text-gray-700 py-2 rounded-lg hover:bg-gray-100 transition text-sm font-medium">
                   {t('works.viewDetails')}
                 </Link>
               </div>

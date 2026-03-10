@@ -112,6 +112,16 @@ sqliteDb.exec(`
     created_at TEXT,
     updated_at TEXT
   );
+  CREATE TABLE IF NOT EXISTS reference_images (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    user_id TEXT,
+    name TEXT,
+    image_url TEXT NOT NULL,
+    thumbnail_url TEXT,
+    order_index INTEGER,
+    created_at TEXT
+  );
 `);
 
 try {

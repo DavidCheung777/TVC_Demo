@@ -58,7 +58,6 @@
       "title": "创建新项目",
       "projectName": "项目名称",
       "productDesc": "产品描述",
-      "targetAudience": "目标受众",
       "budgetRange": "预算范围",
       "cancel": "取消",
       "create": "创建",
@@ -95,7 +94,6 @@
     "duration": "时长（秒）",
     "customDuration": "自定义",
     "customDurationPlaceholder": "输入时长（秒）",
-    "style": "风格",
     "generate": "生成脚本",
     "generating": "生成中...",
     "output": "生成的脚本",
@@ -103,12 +101,6 @@
     "visual": "画面",
     "audio": "旁白/音效",
     "proceed": "前往分镜生成",
-    "styles": {
-      "modern": "现代活力",
-      "emotional": "情感叙事",
-      "professional": "专业商务",
-      "humorous": "幽默风趣"
-    },
     "placeholder": {
       "script": "生成的脚本将显示在这里",
       "features": "- 高性能\n- 环保\n- 价格实惠"
@@ -341,7 +333,6 @@
         "status": "状态",
         "createdAt": "创建时间",
         "productInfo": "产品信息",
-        "targetAudience": "目标受众",
         "budget": "预算范围",
         "scripts": "脚本",
         "storyboards": "分镜",
